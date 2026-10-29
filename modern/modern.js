@@ -7,6 +7,13 @@
 (function () {
   "use strict";
 
+  // If the user chose the classic UI, disable the
+  // CSS boot veil synchronously so the classic page paints immediately.
+  try {
+    if (localStorage.getItem("cpp_modern_ui") === "false")
+      document.documentElement.classList.add("modern-off");
+  } catch (e) {}
+
   // ===== CONFIGURATION =====
   var STORAGE_KEY = "cpp_modern_ui";
   var DARK_KEY = "cpp_modern_dark";
@@ -1960,6 +1967,7 @@
     localStorage.setItem(STORAGE_KEY, "false");
     document.documentElement.classList.remove("modern-active");
     document.documentElement.classList.remove("modern-dark");
+    document.documentElement.classList.add("modern-off");
     var app = document.getElementById("modern-app");
     if (app) app.style.display = "none";
     addClassicToggleButton();
@@ -2000,6 +2008,7 @@
     btn.innerHTML = SVG.switchUI + " Modern UI";
     btn.onclick = function () {
       localStorage.setItem(STORAGE_KEY, "true");
+      document.documentElement.classList.remove("modern-off");
       window.location.reload();
     };
     document.body.appendChild(btn);
@@ -2264,9 +2273,17 @@
     });
   }
 
-  if (document.readyState === "complete") {
-    setTimeout(init, 100);
+  // Activate as soon as the DOM is ready instead of
+  // waiting for the full window load event; retry briefly while copyparty's
+  // page data (CGV/ls0) is not available yet.
+  var bootTries = 0;
+  function boot() {
+    if ((window.CGV || window.ls0) || ++bootTries > 40) { init(); return; }
+    setTimeout(boot, 50);
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    window.addEventListener("load", function () { setTimeout(init, 100); });
+    boot();
   }
 })();

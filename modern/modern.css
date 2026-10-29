@@ -3,6 +3,17 @@
    Zero dependencies, loaded via --css-browser
    ============================================================ */
 
+/* ===== 0. BOOT VEIL =====
+   Hide the classic UI until the modern UI activates (html.modern-active),
+   so the classic interface never flashes on load. Failsafe: if the modern
+   script never runs, a CSS animation reveals the page after 2s.
+   html.modern-off (user chose the classic UI) disables the veil. */
+@keyframes cpp-veil-failsafe { to { visibility: visible; } }
+html:not(.modern-active):not(.modern-off) body {
+  visibility: hidden;
+  animation: cpp-veil-failsafe 0s linear 2s forwards;
+}
+
 /* ===== 1. DESIGN TOKENS ===== */
 :root {
   --m-font: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
